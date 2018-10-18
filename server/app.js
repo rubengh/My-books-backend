@@ -27,6 +27,7 @@ app.use(bodyParser.json());
 var librosRoutes = require('../routes/libros');
 var autoresRoutes = require('../routes/autores');
 var tematicasRoutes = require('../routes/tematicas');
+var comentariosRoutes = require('../routes/comentarios');
 
 
 // Conexión a la BBDD
@@ -44,6 +45,7 @@ connection.connect((err) => {
 app.use('/libro', librosRoutes);
 app.use('/autor', autoresRoutes);
 app.use('/tematica', tematicasRoutes);
+app.use('/comentario', comentariosRoutes);
 
 // Escuchar peticiones
 app.listen(3000, () => {
