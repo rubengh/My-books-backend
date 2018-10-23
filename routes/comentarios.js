@@ -23,6 +23,8 @@ var query = {
 
 var body = {
     comentario:{ isRequired: true },
+    id_libro  : { isRequired: false },
+    id_usuario: { isRequired: false },
 };
 
 // =============================
@@ -101,7 +103,7 @@ app.put('/:id', routeValidator.validate({
 }), function(req, resp) {
 
     var query = "UPDATE ?? SET comentario = ? WHERE id = ?";
-    var attr = [tabla, req.body.comentario];
+    var attr = [tabla, req.body.comentario, req.params.id];
     query = mysql.format(query, attr);
 
     console.log(query);
@@ -152,6 +154,61 @@ app.get('/:id', routeValidator.validate({
     });
 });
 
+// =============================
+// Crea un Comentario
+// =============================
+app.post('/', routeValidator.validate({
+
+    'body': body
+
+}), function(req, resp) {
+
+    var query = "INSERT INTO ?? (comentario, id_usuario, id_libro) VALUES(?,?,?)";
+    var attr = [tabla, req.body.comentario, req.body.id_usuario, req.body.id_libro];
+    query = mysql.format(query, attr);
+
+    console.log(query);
+
+    connection.query(query, function(error, results) {
+        
+        if (error) {
+            resp.status(400).json({
+                error: error
+            });
+        }
+        resp.status(200).json({
+            id: results.insertId,
+        });
+    });
+});
+
+// =============================
+// Borrar un Comentario
+// =============================
+app.delete('/:id', routeValidator.validate({
+    //
+    // Sin validator
+    //
+}), function(req, resp) {
+
+    var query = "DELETE FROM ?? WHERE id = ?";
+    var table = [tabla, req.params.id];
+    query = mysql.format(query, table);
+
+    console.log(query);
+
+    connection.query(query, function(error, results) {
+        if (error) {
+            resp.status(400).json({
+                error: error
+            });
+        }
+
+        resp.status(200).json({
+            deleted: results.affectedRows > 0,
+        });
+    });
+});
 
 
 module.exports = app;
