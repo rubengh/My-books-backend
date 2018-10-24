@@ -16,7 +16,8 @@ var query = {
     lim:    { isRequired: false },
     offset: { isRequired: false },
     page:   { isRequired: false },
-    lang:   { isRequired: false, }
+    lang:   { isRequired: false },
+    listado:{ isRequired: false }, // 0 - Todos,
 };
 
 var body = {
@@ -25,7 +26,7 @@ var body = {
     precio:    { isRequired: false },
     comprado:  { isRequired: false },
     comentario:{ isRequired: false },
-    tematica:  { isRequired: false },
+    tematica:  { isRequired: false },    
 };
 
 // =============================
@@ -52,6 +53,7 @@ app.get('/', routeValidator.validate({
         let v_totalRows = rows[0].TotalRows;
         let v_lim = parseInt(c_limit);
         let v_offset = parseInt(c_offset);
+        let v_clausula = "";
 
         if (err) {
             return err;
@@ -62,14 +64,22 @@ app.get('/', routeValidator.validate({
             if (req.query.offset) {
                 v_offset = parseInt(req.query.offset);
             }
+            if (req.query.listado) {
+                switch (parseInt(req.query.listado)) {
+                    case 0: {v_clausula = ""; break;}
+                    case 1: {v_clausula = " WHERE a.comprado = 'S'"; break;}
+                    case 2: {v_clausula = " WHERE a.comprado = 'N'"; break;}
+                    // case 3: v_clausula = " WHERE leido    = 'S' ";
+                    default: {v_clausula = ""; break;}
+                }
+            }
         }
-
         // v_offset = v_offset + (v_lim * req.query.page);
 
         var query = '';
         var attr = [];
         
-        query = "SELECT * FROM ?? a limit ? OFFSET ?";
+        query = "SELECT * FROM ?? a"+  v_clausula +" limit ? OFFSET ?";
         attr = [tabla, v_lim, v_offset];
 
         query = mysql.format(query, attr);
@@ -161,8 +171,8 @@ app.post('/', routeValidator.validate({
 
 }), function(req, resp) {
 
-    var query = "INSERT INTO ?? (titulo, autor, precio, comprado, comentario, tematica) VALUES(?,?,?,?,?,?)";
-    var attr = [tabla, req.body.titulo, req.body.autor, req.body.precio, req.body.comprado, req.body.comentario, req.body.tematica];
+    var query = "INSERT INTO ?? (titulo, autor, precio, comprado, tematica) VALUES(?,?,?,?,?)";
+    var attr = [tabla, req.body.titulo, req.body.autor, req.body.precio, req.body.comprado, req.body.tematica];
     query = mysql.format(query, attr);
 
     console.log(query);
