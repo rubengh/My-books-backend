@@ -17,7 +17,9 @@ var query = {
     offset: { isRequired: false },
     page:   { isRequired: false },
     lang:   { isRequired: false },
-    listado:{ isRequired: false }, // 0 - Todos,
+    titulo: { isRequired: false },
+    autor:  { isRequired: false },
+    tematica: { isRequired: false },
 };
 
 var body = {
@@ -40,10 +42,26 @@ app.get('/', routeValidator.validate({
 
     var query = '';
     var attr = [];
+    let v_clausula = "";
+    let v_clausula_1 = "";
+    let v_clausula_2 = "";
+    let v_clausula_3 = "";
 
-    query = "SELECT COUNT(*) AS TotalRows FROM ??";
+    if (req.query.titulo) {
+        v_clausula_1 = " WHERE a.titulo LIKE '%" + req.query.titulo + "%'";
+    }
+
+    if (req.query.autor) {
+        v_clausula_2 = " AND b.id =" + req.query.autor;
+    }
+
+    if (req.query.tematica) {
+        v_clausula_3 = " AND c.id =" + req.query.tematica;
+    }
+
+    v_clausula = v_clausula_1.concat(v_clausula_2).concat(v_clausula_3);
+    query = "SELECT COUNT(*) AS TotalRows FROM ?? a JOIN mst_autores b ON a.autor = b.id JOIN mst_tematicas c ON a.tematica = c.id "+  v_clausula;
     attr = [tabla];
-
 
     query = mysql.format(query, attr);
 
@@ -53,25 +71,17 @@ app.get('/', routeValidator.validate({
         let v_totalRows = rows[0].TotalRows;
         let v_lim = parseInt(c_limit);
         let v_offset = parseInt(c_offset);
-        let v_clausula = "";
+
 
         if (err) {
             return err;
-        } else {
+        } 
+        else {
             if (req.query.lim) {
                 v_lim = parseInt(req.query.lim);
             }
             if (req.query.offset) {
                 v_offset = parseInt(req.query.offset);
-            }
-            if (req.query.listado) {
-                switch (parseInt(req.query.listado)) {
-                    case 0: {v_clausula = ""; break;}
-                    case 1: {v_clausula = " WHERE a.comprado = 'S'"; break;}
-                    case 2: {v_clausula = " WHERE a.comprado = 'N'"; break;}
-                    // case 3: v_clausula = " WHERE leido    = 'S' ";
-                    default: {v_clausula = ""; break;}
-                }
             }
         }
         // v_offset = v_offset + (v_lim * req.query.page);
@@ -79,7 +89,7 @@ app.get('/', routeValidator.validate({
         var query = '';
         var attr = [];
         
-        query = "SELECT * FROM ?? a"+  v_clausula +" limit ? OFFSET ?";
+        query = "SELECT a.*, b.nombre as nombre_autor, c.nombre as nombre_tematica FROM ?? a JOIN mst_autores b ON a.autor = b.id JOIN mst_tematicas c ON a.tematica = c.id "+  v_clausula +" limit ? OFFSET ?";
         attr = [tabla, v_lim, v_offset];
 
         query = mysql.format(query, attr);
