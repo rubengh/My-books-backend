@@ -19,6 +19,7 @@ var query = {
     lang:   { isRequired: false },
     titulo: { isRequired: false },
     autor:  { isRequired: false },
+    comprado:  { isRequired: false },
     tematica: { isRequired: false },
 };
 
@@ -26,8 +27,6 @@ var body = {
     titulo:    { isRequired: true },
     autor:     { isRequired: false },
     precio:    { isRequired: false },
-    comprado:  { isRequired: false },
-    comentario:{ isRequired: false },
     tematica:  { isRequired: false },    
 };
 
@@ -46,11 +45,12 @@ app.get('/', routeValidator.validate({
     let v_clausula_1 = "";
     let v_clausula_2 = "";
     let v_clausula_3 = "";
+    let v_clausula_4 = "";
 
     if (req.query.titulo) {
         v_clausula_1 = " WHERE a.titulo LIKE '%" + req.query.titulo + "%'";
     }
-
+    
     if (req.query.autor) {
         v_clausula_2 = " AND b.id =" + req.query.autor;
     }
@@ -59,7 +59,11 @@ app.get('/', routeValidator.validate({
         v_clausula_3 = " AND c.id =" + req.query.tematica;
     }
 
-    v_clausula = v_clausula_1.concat(v_clausula_2).concat(v_clausula_3);
+    if (req.query.comprado) {
+        v_clausula_4 = " AND a.comprado ='" + req.query.comprado + "'";
+    }
+
+    v_clausula = v_clausula_1.concat(v_clausula_2).concat(v_clausula_3).concat(v_clausula_4);
     query = "SELECT COUNT(*) AS TotalRows FROM ?? a JOIN mst_autores b ON a.autor = b.id JOIN mst_tematicas c ON a.tematica = c.id "+  v_clausula;
     attr = [tabla];
 
@@ -123,8 +127,8 @@ app.put('/:id', routeValidator.validate({
 
 }), function(req, resp) {
 
-    var query = "UPDATE ?? SET titulo = ?, autor = ?, precio = ?, comprado = ?, comentario = ?, tematica = ?  WHERE id = ?";
-    var attr = [tabla, req.body.titulo, req.body.autor, req.body.precio, req.body.comprado, req.body.comentario, req.body.tematica, req.params.id];
+    var query = "UPDATE ?? SET titulo = ?, autor = ?, precio = ?, comprado = ?, tematica = ?  WHERE id = ?";
+    var attr = [tabla, req.body.titulo, req.body.autor, req.body.precio, req.body.comprado, req.body.tematica, req.params.id];
     query = mysql.format(query, attr);
 
     console.log(query);
