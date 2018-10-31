@@ -10,19 +10,19 @@ const c_connection = require('../config/config').connection;
 var connection = mysql.createConnection(c_connection);
 var app = express();
 
-var tabla = 'comentarios';
-var tabla2 = 'libros_has_comentarios'
-
+var tabla  = 'comentarios';
+var tabla2 = 'mst_usuarios';
 
 var query = {
-    lim:    { isRequired: false },
-    offset: { isRequired: false },
-    page:   { isRequired: false },
-    lang:   { isRequired: false, }
+    lim:      { isRequired: false },
+    offset:   { isRequired: false },
+    page:     { isRequired: false },
+    lang:     { isRequired: false },
+    id_libro: { isRequired: false}
 };
 
 var body = {
-    comentario:{ isRequired: true },
+    comentario: { isRequired: false },
     id_libro  : { isRequired: false },
     id_usuario: { isRequired: false },
 };
@@ -32,15 +32,24 @@ var body = {
 // =============================
 app.get('/', routeValidator.validate({
 
-    'query' : query
+    'query' : query,
+    'body'  : body
 
 }), function(req, resp) {
 
     var query = '';
     var attr = [];
 
-    query = "SELECT COUNT(*) AS TotalRows FROM ??";
-    attr = [tabla];
+    console.log('req.query.id_libro : ', req.query.id_libro);
+
+    if (req.query.id_libro) {
+        query = "SELECT COUNT(*) AS TotalRows FROM ?? a WHERE a.id_libro = ?";
+        attr = [tabla, req.body.id_libro];
+    }
+    else {
+        query = "SELECT COUNT(*) AS TotalRows FROM ?? a";
+        attr = [tabla];
+    }
 
 
     query = mysql.format(query, attr);
@@ -67,9 +76,15 @@ app.get('/', routeValidator.validate({
 
         var query = '';
         var attr = [];
-        
-        query = "SELECT * FROM ?? a limit ? OFFSET ?";
-        attr = [tabla, v_lim, v_offset];
+
+        if (req.query.id_libro) {
+            query = "SELECT a.*, concat(b.nombre, ' ' , b.apellidos) as nombre_usuario FROM ?? a JOIN ?? b ON a.id_usuario = b.id WHERE a.id_libro = ? limit ? OFFSET ?";
+            attr = [tabla, tabla2, req.query.id_libro, v_lim, v_offset];
+        }
+        else {
+            query = "SELECT * FROM ?? a limit ? OFFSET ?";
+            attr = [tabla, v_lim, v_offset];
+        }        
 
         query = mysql.format(query, attr);
         console.log(query);

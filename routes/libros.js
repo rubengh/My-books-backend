@@ -19,7 +19,7 @@ var query = {
     lang:   { isRequired: false },
     titulo: { isRequired: false },
     autor:  { isRequired: false },
-    comprado:  { isRequired: false },
+    comprado: { isRequired: false },
     tematica: { isRequired: false },
 };
 
