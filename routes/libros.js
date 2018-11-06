@@ -186,7 +186,7 @@ app.post('/', routeValidator.validate({
 }), function(req, resp) {
 
     var query = "INSERT INTO ?? (titulo, autor, precio, comprado, tematica) VALUES(?,?,?,?,?)";
-    var attr = [tabla, req.body.titulo, req.body.autor, req.body.precio, req.body.comprado, req.body.tematica];
+    var attr = [tabla, req.body.titulo.toUpperCase(), req.body.autor, req.body.precio, req.body.comprado, req.body.tematica];
     query = mysql.format(query, attr);
 
     console.log(query);
